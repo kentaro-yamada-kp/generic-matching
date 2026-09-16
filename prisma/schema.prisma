@@ -1,0 +1,227 @@
+// なんでもマッチング Prisma スキーマ定義ファイル
+// データベース詳細設計書 (docs/database-design.md) に基づくデータモデル設計
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// ユーザー基本情報（内部ID、表示名、アバター画像URL、タイムスタンプ）
+model User {
+  id          String   @id @default(uuid()) @db.Uuid
+  displayName String   @map("display_name")
+  avatarUrl   String?  @map("avatar_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // リレーション
+  authProviders      UserAuthProvider[]
+  profile            UserProfile?
+  ownedThreads       Thread[]            @relation("ThreadOwner")
+  threadParticipants ThreadParticipant[] @relation("UserThreadParticipants")
+  matchesAsUser1     Match[]             @relation("MatchUser1")
+  matchesAsUser2     Match[]             @relation("MatchUser2")
+  sentMessages       ChatMessage[]       @relation("UserSentMessages")
+
+  @@map("users")
+}
+
+/// 外部OAuth認証プロバイダ連携情報（Twitter, Instagram, LINE, Discord, Steam, PSN等）
+model UserAuthProvider {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  provider       String    // "twitter" | "instagram" | "line" | "discord" | "steam" | "playstation" | "breal" | "tiktok"
+  providerUserId String    @map("provider_user_id")
+  accessToken    String?   @map("access_token")
+  refreshToken   String?   @map("refresh_token")
+  linkedAt       DateTime  @default(now()) @map("linked_at")
+
+  // リレーション
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("user_auth_providers")
+}
+
+/// ユーザーの共通基本条件属性 (A: 年齢、性別、居住地域、利用目的、スキル/趣味カテゴリ、オンライン状態)
+model UserProfile {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  age       Int?
+  gender    String?
+  location  String?
+  purpose   String?
+  category  String?
+  isOnline  Boolean  @default(false) @map("is_online")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // リレーション
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isOnline])
+  @@index([category])
+  @@index([location])
+  @@map("user_profiles")
+}
+
+/// 募集スレッド
+model Thread {
+  id          String   @id @default(uuid()) @db.Uuid
+  ownerUserId String   @map("owner_user_id") @db.Uuid
+  title       String
+  description String?
+  category    String   @default("general")
+  status      String   @default("open") // "open" | "closed"
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // リレーション
+  owner        User                @relation("ThreadOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  conditions   ThreadCondition[]
+  participants ThreadParticipant[]
+  evaluations  MatchEvaluation[]
+  matches      Match[]
+
+  @@index([ownerUserId])
+  @@index([category])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("threads")
+}
+
+/// スレッド固有のマッチング条件定義 (Key-Value-Type)
+model ThreadCondition {
+  id        String   @id @default(uuid()) @db.Uuid
+  threadId  String   @map("thread_id") @db.Uuid
+  key       String
+  value     String
+  type      String   @default("string") // string, number, enum, tag
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // リレーション
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
+  @@index([key, value])
+  @@map("thread_conditions")
+}
+
+/// スレッド参加情報（参加者独自プロフィール・ステータス）
+model ThreadParticipant {
+  id         String   @id @default(uuid()) @db.Uuid
+  threadId   String   @map("thread_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  customBio  String?  @map("custom_bio")
+  status     String   @default("active") // "active" | "left" | "matched"
+  joinedAt   DateTime @default(now()) @map("joined_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // リレーション
+  thread             Thread                 @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user               User                   @relation("UserThreadParticipants", fields: [userId], references: [id], onDelete: Cascade)
+  attributes         ParticipantAttribute[]
+  sentEvaluations    MatchEvaluation[]      @relation("EvaluationFrom")
+  receivedEvaluations MatchEvaluation[]     @relation("EvaluationTo")
+
+  @@unique([threadId, userId])
+  @@index([threadId])
+  @@index([userId])
+  @@index([status])
+  @@map("thread_participants")
+}
+
+/// スレッド参加者の独自属性・条件 (Key-Value-Type)
+model ParticipantAttribute {
+  id            String   @id @default(uuid()) @db.Uuid
+  participantId String   @map("participant_id") @db.Uuid
+  key           String
+  value         String
+  type          String   @default("string")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // リレーション
+  participant ThreadParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@index([participantId])
+  @@index([key, value])
+  @@map("participant_attributes")
+}
+
+/// スレッド内での参加者間マッチング評価（Agree / Disagree）
+model MatchEvaluation {
+  id                String   @id @default(uuid()) @db.Uuid
+  threadId          String   @map("thread_id") @db.Uuid
+  fromParticipantId String   @map("from_participant_id") @db.Uuid
+  toParticipantId   String   @map("to_participant_id") @db.Uuid
+  isAgree           Boolean  @map("is_agree")
+  evaluatedAt       DateTime @default(now()) @map("evaluated_at")
+
+  // リレーション
+  thread          Thread            @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  fromParticipant ThreadParticipant @relation("EvaluationFrom", fields: [fromParticipantId], references: [id], onDelete: Cascade)
+  toParticipant   ThreadParticipant @relation("EvaluationTo", fields: [toParticipantId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, fromParticipantId, toParticipantId])
+  @@index([threadId])
+  @@index([fromParticipantId])
+  @@index([toParticipantId])
+  @@map("match_evaluations")
+}
+
+/// マッチング成立レコード（双方がAgreeしたペア）
+model Match {
+  id        String   @id @default(uuid()) @db.Uuid
+  threadId  String   @map("thread_id") @db.Uuid
+  user1Id   String   @map("user1_id") @db.Uuid
+  user2Id   String   @map("user2_id") @db.Uuid
+  matchedAt DateTime @default(now()) @map("matched_at")
+
+  // リレーション
+  thread   Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user1    User      @relation("MatchUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2    User      @relation("MatchUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  chatRoom ChatRoom?
+
+  @@unique([threadId, user1Id, user2Id])
+  @@index([threadId])
+  @@index([user1Id])
+  @@index([user2Id])
+  @@index([matchedAt(sort: Desc)])
+  @@map("matches")
+}
+
+/// マッチング成立時に自動生成される専用チャットルーム
+model ChatRoom {
+  id        String   @id @default(uuid()) @db.Uuid
+  matchId   String   @unique @map("match_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // リレーション
+  match    Match         @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@map("chat_rooms")
+}
+
+/// チャットルーム内での送受信メッセージ履歴
+model ChatMessage {
+  id           String   @id @default(uuid()) @db.Uuid
+  roomId       String   @map("room_id") @db.Uuid
+  senderUserId String   @map("sender_user_id") @db.Uuid
+  message      String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // リレーション
+  room   ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender User     @relation("UserSentMessages", fields: [senderUserId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, createdAt(sort: Asc)])
+  @@index([senderUserId])
+  @@map("chat_messages")
+}
