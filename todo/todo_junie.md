@@ -25,10 +25,10 @@
     - [ ] 監視・アラート設計（CloudWatch, Sentry等による障害検知）
     - [ ] バックアップ・リストア運用方針（PostgreSQL/RDSの自動バックアップ）
     - [ ] セキュリティインシデントおよびユーザー問い合わせ対応フロー
-- [ ] Phase 8: インフラ設計・本番構築 & デプロイ
-  - [ ] 設計・構築ドキュメントの作成 (`docs/infrastructure-design.md`, `docs/prod-environment.md`)
-  - [ ] AWS リソース構築（VPC, サブネット, セキュリティグループ, EC2/ECS, RDS, S3）
-  - [ ] デプロイパイプライン (CI/CD) の構築（GitHub Actions）
+- [x] Phase 8: インフラ設計・本番構築 & デプロイ
+  - [x] 設計・構築ドキュメントの作成 (`docs/infrastructure-design.md`, `docs/prod-environment.md`)
+  - [x] AWS リソース構築（VPC, サブネット, セキュリティグループ, EC2/ECS, RDS, S3）
+  - [x] デプロイパイプライン (CI/CD) の構築（GitHub Actions / Jenkins integration）
 - [ ] 将来拡張: スケーラビリティ & インフラ拡張
   - [ ] Redis / ElastiCache による WebSocket コネクションのセッション共有（Redis Pub/Sub）
   - [ ] 単一EC2構成から AWS ECS (Fargate) + ALB 構成への移行（水平オートスケーリング）
