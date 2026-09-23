@@ -51,7 +51,8 @@ export async function middleware(request: NextRequest) {
 
   // 未認証で保護対象ページへのアクセスの場合はログインモーダル表示フラグ付きでトップへリダイレクト
   if (isProtectedPage) {
-    const loginUrl = new URL("/", request.url);
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    const loginUrl = new URL(`${basePath}/`, request.url);
     loginUrl.searchParams.set("login", "true");
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
