@@ -109,3 +109,12 @@ export function getOAuthCallbackUrl(provider: SupportedOAuthProvider): string {
 export const SESSION_COOKIE_NAME = "gm_auth_session";
 export const STATE_COOKIE_NAME = "gm_auth_state";
 export const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30日（秒）
+
+/**
+ * サブパス（basePath）を考慮した安全なリダイレクトURLを生成する
+ */
+export function getRedirectUrl(path: string): URL {
+  const baseUrl = getAppBaseUrl();
+  const cleanPath = path.replace(/^\/+/, "");
+  return new URL(cleanPath, baseUrl + "/");
+}

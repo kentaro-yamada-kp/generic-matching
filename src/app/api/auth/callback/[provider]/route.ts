@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { SupportedOAuthProvider } from "@/types/auth";
-import { getAppBaseUrl } from "@/lib/auth/config";
+import { getRedirectUrl } from "@/lib/auth/config";
 import { verifyOAuthState, exchangeCodeForUserInfo } from "@/lib/auth/oauth";
 import { handleOAuthLoginOrLink } from "@/server/auth/service";
 import { createSessionToken } from "@/lib/auth/jwt";
@@ -25,10 +25,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   if (error) {
     const message = errorDescription || error;
     return NextResponse.redirect(
-      new URL(
-        `/?error=${encodeURIComponent(`認証が拒否または失敗しました: ${message}`)}`,
-        getAppBaseUrl()
-      )
+      getRedirectUrl(`/?error=${encodeURIComponent(`認証が拒否または失敗しました: ${message}`)}`)
     );
   }
 
@@ -37,7 +34,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   if (!code || !state) {
     return NextResponse.redirect(
-      new URL(`/?error=${encodeURIComponent("認証パラメータが不足しています。")}`, getAppBaseUrl())
+      getRedirectUrl(`/?error=${encodeURIComponent("認証パラメータが不足しています。")}`)
     );
   }
 
@@ -45,10 +42,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const statePayload = await verifyOAuthState(state);
   if (!statePayload || statePayload.provider !== provider) {
     return NextResponse.redirect(
-      new URL(
-        `/?error=${encodeURIComponent("認証セッションがタイムアウトしたか無効です。再度お試しください。")}`,
-        getAppBaseUrl()
-      )
+      getRedirectUrl(`/?error=${encodeURIComponent("認証セッションがタイムアウトしたか無効です。再度お試しください。")}`)
     );
   }
 
@@ -68,12 +62,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
     await setSessionCookie(sessionToken);
 
     const redirectUrl = statePayload.redirectUrl || "/";
-    return NextResponse.redirect(new URL(redirectUrl, getAppBaseUrl()));
+    return NextResponse.redirect(getRedirectUrl(redirectUrl));
   } catch (err: unknown) {
     const message =
       err instanceof Error ? err.message : "認証コールバック処理中にエラーが発生しました。";
     return NextResponse.redirect(
-      new URL(`/?error=${encodeURIComponent(message)}`, getAppBaseUrl())
+      getRedirectUrl(`/?error=${encodeURIComponent(message)}`)
     );
   }
 }

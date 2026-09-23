@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { SupportedOAuthProvider } from "@/types/auth";
-import { isProviderConfigured, getAppBaseUrl } from "@/lib/auth/config";
+import { isProviderConfigured, getRedirectUrl } from "@/lib/auth/config";
 import { buildAuthorizationUrl, generateMockOAuthUserInfo } from "@/lib/auth/oauth";
 import { getSession } from "@/lib/auth/session";
 import { handleOAuthLoginOrLink } from "@/server/auth/service";
@@ -43,10 +43,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const session = await getSession();
     if (!session) {
       return NextResponse.redirect(
-        new URL(
-          `/?error=${encodeURIComponent("連携するにはログインが必要です。")}`,
-          getAppBaseUrl()
-        )
+        getRedirectUrl(`/?error=${encodeURIComponent("連携するにはログインが必要です。")}`)
       );
     }
     linkUserId = session.sub;
@@ -63,12 +60,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
       const token = await createSessionToken(authResult.user, oauthProvider);
       await setSessionCookie(token);
 
-      return NextResponse.redirect(new URL(redirectUrl, getAppBaseUrl()));
+      return NextResponse.redirect(getRedirectUrl(redirectUrl));
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : "認証処理中にエラーが発生しました。";
       return NextResponse.redirect(
-        new URL(`/?error=${encodeURIComponent(errorMessage)}`, getAppBaseUrl())
+        getRedirectUrl(`/?error=${encodeURIComponent(errorMessage)}`)
       );
     }
   }
