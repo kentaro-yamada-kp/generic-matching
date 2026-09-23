@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { PublicProfileCard } from "@/components/profile/PublicProfileCard";
 import { UserThreadsList } from "@/components/profile/UserThreadsList";
 import type { PublicUserProfile } from "@/types";
+import { getApiUrl } from "@/lib/utils";
 
 export default function UserPublicProfilePage() {
   const params = useParams();
@@ -27,7 +28,7 @@ export default function UserPublicProfilePage() {
       setError(null);
 
       try {
-        const res = await fetch(`/api/users/${userId}`);
+        const res = await fetch(getApiUrl(`/api/users/${userId}`));
         const data = await res.json();
 
         if (!res.ok || !data.success) {

@@ -3,6 +3,18 @@
  */
 
 /**
+ * サブパス（basePath）を考慮したAPIリクエスト用URLを生成する
+ */
+export function getApiUrl(path: string): string {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  if (basePath && cleanPath.startsWith(basePath)) {
+    return cleanPath;
+  }
+  return `${basePath}${cleanPath}`;
+}
+
+/**
  * 日時（Dateオブジェクト、文字列、ミリ秒）を日本語の日時表記にフォーマットします。
  *
  * @param date - フォーマット対象の日時

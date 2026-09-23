@@ -13,6 +13,7 @@ import {
   DEFAULT_AVATARS,
 } from "@/lib/constants";
 import type { MyUserProfile, UpdateProfilePayload } from "@/types";
+import { getApiUrl } from "@/lib/utils";
 
 export interface ProfileEditFormProps {
   initialData: MyUserProfile;
@@ -101,7 +102,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
         },
       };
 
-      const res = await fetch("/api/users/me", {
+      const res = await fetch(getApiUrl("/api/users/me"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

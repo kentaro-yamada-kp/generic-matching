@@ -9,6 +9,7 @@ import { ProviderButton } from "@/components/auth/ProviderButton";
 import { AccountLinksModal } from "@/components/auth/AccountLinksModal";
 import { ThreadCard } from "@/components/threads/ThreadCard";
 import type { ThreadWithDetails } from "@/types";
+import { getApiUrl } from "@/lib/utils";
 
 export default function Home() {
   const { user, isAuthenticated, isLoading, openAuthModal, devLogin } = useAuth();
@@ -22,7 +23,7 @@ export default function Home() {
     const fetchRecentThreads = async () => {
       try {
         setThreadsLoading(true);
-        const res = await fetch("/api/threads?limit=4");
+        const res = await fetch(getApiUrl("/api/threads?limit=4"));
         const data = await res.json();
         if (data.success && data.data?.threads) {
           setRecentThreads(data.data.threads);

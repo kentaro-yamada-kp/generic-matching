@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { ConditionBuilder, ConditionField } from "@/components/threads/ConditionBuilder";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { getApiUrl } from "@/lib/utils";
 
 /**
  * SCR-05: スレッド新規作成画面
@@ -47,7 +48,7 @@ export default function NewThreadPage() {
           type: c.type.trim(),
         }));
 
-      const res = await fetch("/api/threads", {
+      const res = await fetch(getApiUrl("/api/threads"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

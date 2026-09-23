@@ -7,6 +7,7 @@ import { ThreadSearchFilter } from "@/components/threads/ThreadSearchFilter";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth/AuthContext";
 import type { ThreadWithDetails } from "@/types";
+import { getApiUrl } from "@/lib/utils";
 
 /**
  * SCR-03: スレッド一覧・検索画面
@@ -35,7 +36,7 @@ export default function ThreadsPage() {
       if (searchParams.category) query.set("category", searchParams.category);
       if (searchParams.isOnlineOnly) query.set("isOnlineOnly", "true");
 
-      const res = await fetch(`/api/threads?${query.toString()}`);
+      const res = await fetch(getApiUrl(`/api/threads?${query.toString()}`));
       const data = await res.json();
 
       if (data.success) {

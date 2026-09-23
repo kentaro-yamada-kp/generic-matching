@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { SessionUser, SupportedOAuthProvider } from "@/types/auth";
+import { getApiUrl } from "@/lib/utils";
 
 export interface AuthContextType {
   user: SessionUser | null;
@@ -39,7 +40,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const refreshUser = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/session", { cache: "no-store" });
+      const res = await fetch(getApiUrl("/api/auth/session"), { cache: "no-store" });
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data?.user) {
@@ -80,7 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = useCallback((provider: SupportedOAuthProvider, redirectUrl?: string) => {
-    const url = new URL(`/api/auth/${provider}`, window.location.origin);
+    const url = new URL(getApiUrl(`/api/auth/${provider}`), window.location.origin);
     if (redirectUrl) {
       url.searchParams.set("redirectUrl", redirectUrl);
     }
@@ -91,7 +92,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     async (provider: SupportedOAuthProvider = "twitter", displayName?: string, link?: boolean) => {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/auth/dev-login", {
+        const res = await fetch(getApiUrl("/api/auth/dev-login"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ provider, displayName, link }),
@@ -116,16 +117,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = useCallback(async () => {
     setIsLoading(true);
     try {
-      await fetch("/api/auth/signout", { method: "POST" });
+      await fetch(getApiUrl("/api/auth/signout"), { method: "POST" });
       setUser(null);
-      window.location.href = "/";
+      window.location.href = getApiUrl("/");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const linkProvider = useCallback((provider: SupportedOAuthProvider) => {
-    const url = new URL(`/api/auth/${provider}`, window.location.origin);
+    const url = new URL(getApiUrl(`/api/auth/${provider}`), window.location.origin);
     url.searchParams.set("link", "true");
     url.searchParams.set("redirectUrl", window.location.pathname);
     window.location.href = url.toString();
@@ -135,7 +136,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     async (provider: SupportedOAuthProvider) => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/auth/unlink/${provider}`, {
+        const res = await fetch(getApiUrl(`/api/auth/unlink/${provider}`), {
           method: "DELETE",
         });
         const data = await res.json();

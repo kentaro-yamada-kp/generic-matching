@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { getApiUrl } from "@/lib/utils";
 import type {
   ThreadWithDetails,
   ThreadParticipantWithDetails,
@@ -57,7 +58,7 @@ export default function ThreadDetailPage() {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`/api/threads/${threadId}`);
+      const res = await fetch(getApiUrl(`/api/threads/${threadId}`));
       const data = await res.json();
 
       if (data.success && data.data) {
@@ -92,7 +93,7 @@ export default function ThreadDetailPage() {
     if (!user) return;
     try {
       setCandidatesLoading(true);
-      const res = await fetch(`/api/threads/${threadId}/candidates`);
+      const res = await fetch(getApiUrl(`/api/threads/${threadId}/candidates`));
       const data = await res.json();
       if (data.success && data.data) {
         setCandidates(data.data);
@@ -128,7 +129,7 @@ export default function ThreadDetailPage() {
           type: a.type || "string",
         }));
 
-      const res = await fetch(`/api/threads/${threadId}/join`, {
+      const res = await fetch(getApiUrl(`/api/threads/${threadId}/join`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -157,7 +158,7 @@ export default function ThreadDetailPage() {
   const handleLeaveThread = async () => {
     if (!confirm("このスレッドから退出しますか？")) return;
     try {
-      const res = await fetch(`/api/threads/${threadId}/participants/me`, {
+      const res = await fetch(getApiUrl(`/api/threads/${threadId}/participants/me`), {
         method: "DELETE",
       });
       const data = await res.json();
@@ -176,7 +177,7 @@ export default function ThreadDetailPage() {
   // Agree / Disagree 評価送信
   const handleEvaluation = async (toParticipantId: string, isAgree: boolean) => {
     try {
-      const res = await fetch(`/api/threads/${threadId}/evaluations`, {
+      const res = await fetch(getApiUrl(`/api/threads/${threadId}/evaluations`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

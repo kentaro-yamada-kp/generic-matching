@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { getApiUrl } from "@/lib/utils";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -41,7 +42,7 @@ export default function ChatRoomPage({ params }: ChatRoomPageProps) {
   const fetchRoomData = useCallback(async () => {
     try {
       setError(null);
-      const res = await fetch(`/api/rooms/${roomId}`);
+      const res = await fetch(getApiUrl(`/api/rooms/${roomId}`));
       const data = await res.json();
 
       if (!res.ok || !data.success) {
@@ -83,7 +84,7 @@ export default function ChatRoomPage({ params }: ChatRoomPageProps) {
     let fallbackInterval: NodeJS.Timeout | null = null;
 
     try {
-      eventSource = new EventSource(`/api/rooms/${roomId}/events`);
+      eventSource = new EventSource(getApiUrl(`/api/rooms/${roomId}/events`));
 
       eventSource.addEventListener("message", (event) => {
         try {
@@ -109,7 +110,7 @@ export default function ChatRoomPage({ params }: ChatRoomPageProps) {
         if (!fallbackInterval) {
           fallbackInterval = setInterval(async () => {
             try {
-              const res = await fetch(`/api/rooms/${roomId}/messages`);
+              const res = await fetch(getApiUrl(`/api/rooms/${roomId}/messages`));
               const data = await res.json();
               if (data.success && Array.isArray(data.data)) {
                 setMessages(data.data);
@@ -144,7 +145,7 @@ export default function ChatRoomPage({ params }: ChatRoomPageProps) {
     setIsSending(true);
 
     try {
-      const res = await fetch(`/api/rooms/${roomId}/messages`, {
+      const res = await fetch(getApiUrl(`/api/rooms/${roomId}/messages`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

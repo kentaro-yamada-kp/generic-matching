@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { getApiUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
@@ -37,7 +38,7 @@ export default function ProfilePage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/users/me");
+      const res = await fetch(getApiUrl("/api/users/me"));
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.error || "ユーザー情報の取得に失敗しました。");
@@ -72,7 +73,7 @@ export default function ProfilePage() {
     setUnlinkMessage(null);
 
     try {
-      const res = await fetch("/api/auth/unlink", {
+      const res = await fetch(getApiUrl("/api/auth/unlink"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider }),

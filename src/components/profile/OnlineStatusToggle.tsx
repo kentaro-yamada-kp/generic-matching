@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Switch } from "@/components/ui/Switch";
 import { Badge } from "@/components/ui/Badge";
+import { getApiUrl } from "@/lib/utils";
 
 export interface OnlineStatusToggleProps {
   initialStatus: boolean;
@@ -30,7 +31,7 @@ export const OnlineStatusToggle: React.FC<OnlineStatusToggleProps> = ({
     setIsOnline(newStatus);
 
     try {
-      const res = await fetch("/api/users/me/online-status", {
+      const res = await fetch(getApiUrl("/api/users/me/online-status"), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isOnline: newStatus }),

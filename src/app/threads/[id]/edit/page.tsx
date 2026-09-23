@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { ConditionBuilder, ConditionField } from "@/components/threads/ConditionBuilder";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { getApiUrl } from "@/lib/utils";
 
 /**
  * SCR-06: スレッド編集画面
@@ -34,7 +35,7 @@ export default function EditThreadPage() {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`/api/threads/${threadId}`);
+      const res = await fetch(getApiUrl(`/api/threads/${threadId}`));
       const data = await res.json();
 
       if (data.success && data.data) {
@@ -87,7 +88,7 @@ export default function EditThreadPage() {
           type: c.type.trim(),
         }));
 
-      const res = await fetch(`/api/threads/${threadId}`, {
+      const res = await fetch(getApiUrl(`/api/threads/${threadId}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

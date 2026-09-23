@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useAuth } from "@/lib/auth/AuthContext";
 import type { MatchWithDetails } from "@/types";
+import { getApiUrl } from "@/lib/utils";
 
 /**
  * SCR-09: マッチング一覧画面
@@ -23,7 +24,7 @@ export default function MatchesPage() {
       setLoading(true);
       setError(null);
 
-      const res = await fetch("/api/matches");
+      const res = await fetch(getApiUrl("/api/matches"));
       const data = await res.json();
 
       if (data.success && data.data?.matches) {
