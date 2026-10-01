@@ -21,6 +21,10 @@
   - [x] `Dockerfile` にマルチステージビルド（`builder` および `runner`）を導入し、本番環境では `npm run start` (`next start`) による本番モード（HMR 無し）で起動するように修正
   - [x] `docker-compose.production.yml` に `target: runner` を指定して本番用ビルド成果物を利用するよう構成
   - [x] ビルド (`npm run build`) および静的解析 (`npm run lint`) の正常終了を確認
+- [x] [ISSUE-22] デプロイ時の Docker ビルド (`npm run build`) が `SIGKILL`（OOM / メモリ不足）により失敗する問題の修正（todo_note対応）
+  - [x] `Dockerfile` の builder 層に Node.js ヒープメモリ制限（`ENV NODE_OPTIONS="--max-old-space-size=1024"`）を追加し、メモリ過多による強制終了を防止
+  - [x] `docs/prod-environment.md` にビルド時メモリ不足に関するトラブルシューティングを追記
+  - [x] ローカルでのビルド (`npm run build`) および静的解析 (`npm run lint`) の正常終了を確認
 
 ## Improvements
 - [ ] [ISSUE-17] 画面レイアウト改善・情報量削減（デザイン原則：認知的負荷軽減・1画面の情報集約とシンプル化）（todo_note対応）

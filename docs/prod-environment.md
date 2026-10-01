@@ -132,6 +132,9 @@ curl --fail http://127.0.0.1:3000/api/health
 
 ## 5. ロールバックおよびトラブルシューティング
 
+- **Dockerビルド時におけるメモリ不足 (`SIGKILL` / OOM) エラー**:
+  - 小さなインスタンス（t3.micro/small等）で `docker compose ... up -d --build` を実行した際、Next.jsのビルド中にメモリ不足でコンテナが強制終了（`SIGKILL`）される場合がある。
+  - `Dockerfile` の builder 層に `ENV NODE_OPTIONS="--max-old-space-size=1024"` を設定して Node.js のヒープメモリ使用量を制限している。さらに不足する場合は、インスタンスへのスワップ領域の追加を検討する。
 - **データベースマイグレーション失敗時**:
   - DBスキーマ変更に伴うトラブル時は、直前のDBバックアップからのリストア、またはPrismaによる修正を行う。
 - **コンテナログの確認**:
