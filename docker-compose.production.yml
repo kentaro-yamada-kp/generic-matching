@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runner
     container_name: generic_matching_app
     restart: unless-stopped
     ports:

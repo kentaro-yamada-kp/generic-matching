@@ -10,6 +10,17 @@
   - [x] マイページ詳細取得 (`GET /api/users/me`) でのエラー解消
   - [x] スレッド一覧取得 (`GET /api/threads`) でのエラー解消
   - [x] Prisma Client の再生成・DBスキーマ同期およびキャッシュ整合性の確認
+- [x] [ISSUE-19] `https://kykp.net/generic-matching` へアクセスすると無限リダイレクト（永遠リダイレクト）が発生する問題の修正（todo_note対応）
+  - [x] リバースプロキシ（nginx）および Next.js `basePath`/`trailingSlash` 設定の検証・修正
+  - [x] 動作確認
+- [x] [ISSUE-20] サブパス環境 (`/generic-matching`) での HMR WebSocket 接続エラー (`wss://kykp.net/generic-matching/_next/hmr`) の解消
+  - [x] nginx の専用 location によるパス置換不整合（`Invalid status line`）の原因を特定
+  - [x] nginx 設定を見直し、`location /generic-matching` で basePath を維持したまま basePath 付きパスをバックエンド（ポート 3000）へ正しく転送するように修正
+  - [x] ビルド (`npm run build`) および静的解析 (`npm run lint`) の正常終了を確認
+- [x] [ISSUE-21] 本番環境（Dockerコンテナ）で `next dev`（開発モード）が実行され、HMR WebSocket (`/_next/hmr`) 接続エラーが発生していた問題の根本修正
+  - [x] `Dockerfile` にマルチステージビルド（`builder` および `runner`）を導入し、本番環境では `npm run start` (`next start`) による本番モード（HMR 無し）で起動するように修正
+  - [x] `docker-compose.production.yml` に `target: runner` を指定して本番用ビルド成果物を利用するよう構成
+  - [x] ビルド (`npm run build`) および静的解析 (`npm run lint`) の正常終了を確認
 
 ## Improvements
 - [ ] [ISSUE-17] 画面レイアウト改善・情報量削減（デザイン原則：認知的負荷軽減・1画面の情報集約とシンプル化）（todo_note対応）
